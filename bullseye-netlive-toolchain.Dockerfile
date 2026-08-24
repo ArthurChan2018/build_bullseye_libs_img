@@ -4,6 +4,35 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
 
 # ==========================================
+# 1. 源码编译安装最新版 NASM 3.02 (.tar.gz)
+# ==========================================
+RUN wget https://www.nasm.us/pub/nasm/releasebuilds/3.02/nasm-3.02.tar.gz && \
+    tar -xzf nasm-3.02.tar.gz && \
+    cd nasm-3.02 && \
+    ./configure --prefix=/usr/local && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf /tmp/nasm-3.02*
+
+# ==========================================
+# 6. 源码编译安装最新版 libcurl (绑定 OpenSSL 3.x)
+# ==========================================
+RUN wget https://curl.se/download/curl-8.21.0.tar.gz && \
+    tar -xzf curl-8.21.0.tar.gz && \
+    cd curl-8.21.0 && \
+    cmake -B build -G Ninja \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DENABLE_ARES=OFF \
+        -DCMAKE_USE_OPENSSL=ON \
+        -DOPENSSL_ROOT_DIR=/usr/local/openssl \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_CURL_EXE=ON && \
+    cmake --build build -j$(nproc) && \
+    cmake --install build && \
+    cd / && rm -rf /tmp/curl-8.21.0*
+
+# ==========================================
 # 1. 编译现代高性能内存分配器：mimalloc
 # ==========================================
 RUN git clone --depth 1 --branch v3.5.0 https://github.com/microsoft/mimalloc.git /tmp/mimalloc && \
