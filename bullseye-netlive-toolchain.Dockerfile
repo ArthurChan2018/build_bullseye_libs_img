@@ -43,7 +43,7 @@ RUN wget https://curl.se/download/curl-8.21.0.tar.gz && \
     cd / && rm -rf /tmp/curl-8.21.0*
 
 # ==========================================
-# 1. 编译现代高性能内存分配器：mimalloc
+# 编译现代高性能内存分配器：mimalloc
 # ==========================================
 RUN git clone --depth 1 --branch v3.5.0 https://github.com/microsoft/mimalloc.git /tmp/mimalloc && \
     cd /tmp/mimalloc && \
@@ -54,7 +54,7 @@ RUN git clone --depth 1 --branch v3.5.0 https://github.com/microsoft/mimalloc.gi
     cd / && rm -rf /tmp/mimalloc
 
 # ==========================================
-# 2. 编译高性能无锁并发队列：concurrentqueue
+# 编译高性能无锁并发队列：concurrentqueue
 # ==========================================
 RUN git clone --depth 1 --branch v1.0.5 https://github.com/cameron314/concurrentqueue.git /tmp/concurrentqueue && \
     cd /tmp/concurrentqueue && \
@@ -64,7 +64,7 @@ RUN git clone --depth 1 --branch v1.0.5 https://github.com/cameron314/concurrent
     cd / && rm -rf /tmp/concurrentqueue
 
 # ==========================================
-# 3. 编译 Sentry 崩溃捕获 SDK (sentry-native)
+# 编译 Sentry 崩溃捕获 SDK (sentry-native)
 # ==========================================
 RUN git clone --depth 1 --branch 0.16.3 --recursive https://github.com/getsentry/sentry-native.git /tmp/sentry-native && \
     cd /tmp/sentry-native && \
@@ -75,7 +75,7 @@ RUN git clone --depth 1 --branch 0.16.3 --recursive https://github.com/getsentry
     cd / && rm -rf /tmp/sentry-native
 
 # ==========================================
-# 4. 编译 WebRTC 核心：libdatachannel
+# 编译 WebRTC 核心：libdatachannel
 # ==========================================
 RUN git clone --depth 1 --branch v0.24.5 https://github.com/paullouisageneau/libdatachannel.git /tmp/libdatachannel && \
     cd /tmp/libdatachannel && \
@@ -87,7 +87,7 @@ RUN git clone --depth 1 --branch v0.24.5 https://github.com/paullouisageneau/lib
     cd / && rm -rf /tmp/libdatachannel
 
 # ==========================================
-# 5. 编译 NVIDIA 硬件编解码头文件 (nv-codec-headers)
+# 编译 NVIDIA 硬件编解码头文件 (nv-codec-headers)
 # ==========================================
 RUN git clone --depth 1 --branch n13.1.15.0 https://github.com/FFmpeg/nv-codec-headers.git /tmp/nv-codec-headers && \
     cd /tmp/nv-codec-headers && \
@@ -96,7 +96,7 @@ RUN git clone --depth 1 --branch n13.1.15.0 https://github.com/FFmpeg/nv-codec-h
     cd / && rm -rf /tmp/nv-codec-headers
 
 # ==========================================
-# 6. 编译 Intel oneVPL 硬件加速库 (libvpl)
+# 编译 Intel oneVPL 硬件加速库 (libvpl)
 # ==========================================
 RUN git clone --depth 1 --branch v2.17.0 https://github.com/intel/libvpl.git /tmp/libvpl && \
     cd /tmp/libvpl && \
@@ -118,8 +118,31 @@ RUN cd /tmp && \
     meson install -C build && \
     cd / && rm -rf /tmp/libva
 
+# 源码编译安装 OpenH264
+RUN git clone --depth 1 --branch v2.6.0 https://github.com/cisco/openh264.git /tmp/openh264 && \
+    cd /tmp/openh264 && \
+    make -j$(nproc) && \
+    make install PREFIX=/usr/local && \
+    cd / && rm -rf /tmp/openh264
+
+# 源码编译安装 OpenH264
+RUN git clone --depth 1 --branch v2.6.0 https://github.com/cisco/openh264.git /tmp/openh264 && \
+    cd /tmp/openh264 && \
+    make -j$(nproc) && \
+    make install PREFIX=/usr/local && \
+    cd / && rm -rf /tmp/openh264
+
+# 源码编译安装 SVT-AV1
+RUN git clone --depth 1 --branch v4.2.0 https://gitlab.com/AOMediaCodec/SVT-AV1.git /tmp/SVT-AV1 && \
+    cd /tmp/SVT-AV1 && \
+    mkdir build && cd build && \
+    cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON && \
+    ninja -j$(nproc) && \
+    ninja install && \
+    cd / && rm -rf /tmp/SVT-AV1
+
 # ==========================================
-# 7. 编译终极定制版 FFmpeg (同时启用 NVENC, oneVPL, VAAPI, Opus 等)
+# 编译终极定制版 FFmpeg (同时启用 NVENC, oneVPL, VAAPI, Opus 等)
 # ==========================================
 RUN wget https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz && \
     tar -xf ffmpeg-9.0.1.tar.xz && \
@@ -151,7 +174,17 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz && \
     make install && \
     cd / && rm -rf /tmp/ffmpeg-9.0.1*
 
+# 7. 设置 zsh 为默认 shell 并安装 Oh My Zsh
+RUN chsh -s /usr/bin/zsh root && \
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended || true
+
 # 清理暂存盘
 RUN rm -rf /tmp/*
 
+# 配置 SSH 服务
+EXPOSE 22
+# 1. 在构建时（Build-time）准备好目录
+RUN mkdir -p /run/sshd && chmod 0755 /run/sshd
+# 2. 在运行时（Runtime）动态处理 SSH 公钥并前台启动 sshd
+CMD ["sh", "-c", "mkdir -p /root/.ssh && chmod 700 /root/.ssh && if [ -n '$SSH_PUBLIC_KEY' ]; then echo '$SSH_PUBLIC_KEY' > /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys; fi && exec /usr/sbin/sshd -D"]
 WORKDIR /workspace
