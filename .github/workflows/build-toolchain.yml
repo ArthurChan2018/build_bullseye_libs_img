@@ -47,7 +47,7 @@ jobs:
       with:
         context: .
         file: .//bullseye-netlive-toolchain.Dockerfile  # <--- 请改成你实际存放这个 Dockerfile 的文件名
-        push: false
+        push: true
         tags: arthurch9102/bullseye-toolchain:latest  # 你在上面 Dockerfile 里用的底座名
         outputs: type=docker,dest=/tmp/bullseye-toolchain.tar
 
