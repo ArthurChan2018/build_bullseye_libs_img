@@ -9,7 +9,7 @@ WORKDIR /tmp
 RUN git clone --depth 1 --branch v3.5.0 https://github.com/microsoft/mimalloc.git /tmp/mimalloc && \
     cd /tmp/mimalloc && \
     mkdir build && cd build && \
-    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DMI_BUILD_SHARED=ON -DMI_BUILD_STATIC=ON && \
+    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DMI_BUILD_SHARED=ON -DMI_BUILD_STATIC=ON -DCMAKE_BUILD_TYPE=Release && \
     ninja -j$(nproc) && \
     ninja install && \
     cd / && rm -rf /tmp/mimalloc
@@ -19,8 +19,8 @@ RUN git clone --depth 1 --branch v3.5.0 https://github.com/microsoft/mimalloc.gi
 # ==========================================
 RUN git clone --depth 1 --branch v1.0.5 https://github.com/cameron314/concurrentqueue.git /tmp/concurrentqueue && \
     cd /tmp/concurrentqueue && \
-    mkdir build && cd build && \
-    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local && \
+    mkdir build_ && cd build_ && \
+    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release && \
     ninja install && \
     cd / && rm -rf /tmp/concurrentqueue
 
@@ -30,7 +30,7 @@ RUN git clone --depth 1 --branch v1.0.5 https://github.com/cameron314/concurrent
 RUN git clone --depth 1 --branch 0.16.3 https://github.com/getsentry/sentry-native.git /tmp/sentry-native && \
     cd /tmp/sentry-native && \
     mkdir build && cd build && \
-    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DSENTRY_BACKEND=crashpad && \
+    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release && \
     ninja -j$(nproc) && \
     ninja install && \
     cd / && rm -rf /tmp/sentry-native
@@ -42,7 +42,7 @@ RUN git clone --depth 1 --branch v0.24.5 https://github.com/paullouisageneau/lib
     cd /tmp/libdatachannel && \
     git submodule update --init --recursive && \
     mkdir build && cd build && \
-    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_GNUTLS=OFF -DUSE_MBEDTLS=OFF && \
+    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_GNUTLS=OFF -DUSE_MBEDTLS=OFF -DCMAKE_BUILD_TYPE=Release && \
     ninja -j$(nproc) && \
     ninja install && \
     cd / && rm -rf /tmp/libdatachannel
@@ -80,20 +80,24 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz && \
         --prefix=/usr/local \
         --enable-shared \
         --disable-static \
-        --enable-pic \
-        --enable-gpl \
+        --disable-gpl \
         --enable-version3 \
-        --enable-nonfree \
-        --enable-openssl \
-        --enable-libopus \
-        --enable-libvpx \
-        --enable-libaom \
-        --enable-vaapi \
-        --enable-libvpl \
-        --enable-nvenc \
-        --enable-nvdec \
         --disable-doc \
-        --disable-ffplay && \
+        --disable-everything \
+        --enable-vaapi \
+        --enable-libsvtav1 \
+        --enable-encoder=h264_vaapi,h264_qsv,h264_v4l2m2m,av1_vaapi,av1_v4l2m2m,av1_qsv,aac,libsvtav1,libopenh264,hevc_vaapi,hevc_qsv,hevc_v4l2m2m,h264_nvenc,av1_nvenc,hevc_nvenc \
+        --enable-indev=v4l2,kmsgrab,xcbgrab \
+        --enable-parser=h264,av1,aac,hevc \
+        --enable-muxer=matroska,ivf,rtp,rtsp,h264,av1,hevc \
+        --enable-demuxer=matroska,ivf,rtp,rtsp,h264,av1,hevc \
+        --enable-protocol=file,pipe \
+        --enable-filter=scale,scale_qsv,scale_vaapi,format,aresample,hwmap,hwdownload,anull,pan,scale_cuda \
+        --enable-avdevice \
+        --enable-libopenh264 \
+        --enable-libvpl \
+        --enable-decoder=av1,av1_qsv,h264,h264_qsv,h264_v4l2m2m,libopenh264,hevc_qsv,hevc_v4l2m2m,hevc \
+        --enable-hwaccel=av1_vaapi,h264_vaapi,hevc_vaapi,av1_nvdec,h264_nvdec,hevc_nvdec && \
     make -j$(nproc) && \
     make install && \
     cd / && rm -rf /tmp/ffmpeg-9.0.1*
