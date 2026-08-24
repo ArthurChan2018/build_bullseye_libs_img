@@ -3,6 +3,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /tmp
 
+# 补充安装 libpsl 开发包，供 libcurl 使用
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpsl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # ==========================================
 # 1. 源码编译安装最新版 NASM 3.02 (.tar.gz)
 # ==========================================
