@@ -6,6 +6,11 @@ WORKDIR /tmp
 # 补充安装 libpsl 开发包，供 libcurl 使用
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpsl-dev \
+    libnghttp2-dev \
+    libbrotli-dev \
+    libzstd-dev \
+    libssh2-1-dev \
+    libidn2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # ==========================================
@@ -61,7 +66,7 @@ RUN git clone --depth 1 --branch v1.0.5 https://github.com/cameron314/concurrent
 # ==========================================
 # 3. 编译 Sentry 崩溃捕获 SDK (sentry-native)
 # ==========================================
-RUN git clone --depth 1 --branch 0.16.3 https://github.com/getsentry/sentry-native.git /tmp/sentry-native && \
+RUN git clone --depth 1 --branch 0.16.3 --recursive https://github.com/getsentry/sentry-native.git /tmp/sentry-native && \
     cd /tmp/sentry-native && \
     mkdir build && cd build && \
     cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release && \
