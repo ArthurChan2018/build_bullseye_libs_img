@@ -86,6 +86,17 @@ RUN git clone --depth 1 --branch v0.24.5 https://github.com/paullouisageneau/lib
     ninja install && \
     cd / && rm -rf /tmp/libdatachannel
 
+# 源码编译安装最新稳定版 libopus (音频)
+RUN cd /tmp && \
+    wget https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz && \
+    tar -xzf opus-1.6.1.tar.gz && \
+    cd opus-1.6.1 && \
+    mkdir build && cd build && \
+    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release && \
+    ninja -j$(nproc) && \
+    ninja install && \
+    cd / && rm -rf /tmp/opus-1.6.1*
+
 # ==========================================
 # 编译 NVIDIA 硬件编解码头文件 (nv-codec-headers)
 # ==========================================
