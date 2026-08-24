@@ -155,4 +155,3 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz && \
 RUN rm -rf /tmp/*
 
 WORKDIR /workspace
-CMD ["/usr/sbin/sshd", "-D"]
