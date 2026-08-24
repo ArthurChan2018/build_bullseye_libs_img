@@ -1,0 +1,75 @@
+name: Build and Push Base Image
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'  # 推荐：推送 v 开头标签时才触发 Release（比如 v1.0.0）
+jobs:
+  build-base:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 1. 暴力清理磁盘空间，防止编译 LLVM/CMake 爆盘
+    - name: Free up disk space
+      run: |
+          echo "=== 磁盘清理前状态 ==="
+          df -h
+          
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/swift
+          sudo rm -rf /usr/lib/jvm
+          
+          docker system prune -af
+          
+          echo "=== 磁盘清理后状态 ==="
+          df -h
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # 2. 登录到 Docker Hub（需要提前在仓库 Secrets 里配置好账号密码）
+    #- name: Login to Docker Hub
+    #  uses: docker/login-action@v3
+    #  with:
+    #    username: ${{ secrets.DOCKER_USERNAME }}
+    #    password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # 3. 编译并推送 Base 镜像到 Docker Hub
+    # 请注意修改 file 参数为你实际的 Dockerfile 文件名（例如 base.Dockerfile）
+    - name: Build and push base image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: .//bullseye-netlive-toolchain.Dockerfile  # <--- 请改成你实际存放这个 Dockerfile 的文件名
+        push: false
+        tags: arthurch9102/bullseye-toolchain:latest  # 你在上面 Dockerfile 里用的底座名
+    #    outputs: type=docker,dest=/tmp/bullseye-toolchain.tar
+
+        
+    # 4. 压缩导出的镜像文件
+    #- name: Compress Docker Image
+    #  run: |
+    #    gzip /tmp/bullseye-toolchain.tar
+    #    mv /tmp/bullseye-toolchain.tar.gz ./bullseye-toolchain-${{ github.sha }}.tar.gz
+
+    # 5. 如果是带 tag 的推送（例如 v1.0.0），自动上传到 GitHub Release
+    #- name: Upload to GitHub Release
+    #  if: startsWith(github.ref, 'refs/tags/v')
+    #  uses: softprops/action-gh-release@v2
+    #  with:
+    #    files: ./bullseye-toolchain-*.tar.gz
+    #    body: |
+   #       ### 🚀 Toolchain Image Release ${{ github.ref_name }}
+   #       - **Docker Hub Tag**: `arthurch9102/bullseye-toolchain:${{ github.ref_name }}`
+   #       - **Offline Load Command**:
+   #         ```bash
+   #         docker load -i bullseye-toolchain-<tag>.tar.gz
+   #         ```
+   #   env:
+   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
