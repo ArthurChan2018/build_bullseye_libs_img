@@ -69,7 +69,7 @@ RUN git clone --depth 1 --branch v1.0.5 https://github.com/cameron314/concurrent
 RUN git clone --depth 1 --branch 0.16.3 --recursive https://github.com/getsentry/sentry-native.git /tmp/sentry-native && \
     cd /tmp/sentry-native && \
     mkdir build && cd build && \
-    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release && \
+    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release -DSENTRY_BUILD_TESTS=OFF && \
     ninja -j$(nproc) && \
     ninja install && \
     cd / && rm -rf /tmp/sentry-native
