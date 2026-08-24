@@ -109,6 +109,8 @@ RUN git clone --depth 1 --branch v2.17.0 https://github.com/intel/libvpl.git /tm
     cmake --install build && \
     cd / && rm -rf /tmp/libvpl
 
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/local/openssl/lib/pkgconfig:$PKG_CONFIG_PATH
+
 # ==========================================
 # 7. 编译终极定制版 FFmpeg (同时启用 NVENC, oneVPL, VAAPI, Opus 等)
 # ==========================================
