@@ -145,7 +145,8 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-9.0.1.tar.xz && \
         --enable-libopenh264 \
         --enable-libvpl \
         --enable-decoder=av1,av1_qsv,h264,h264_qsv,h264_v4l2m2m,libopenh264,hevc_qsv,hevc_v4l2m2m,hevc \
-        --enable-hwaccel=av1_vaapi,h264_vaapi,hevc_vaapi,av1_nvdec,h264_nvdec,hevc_nvdec && \
+        --enable-hwaccel=av1_vaapi,h264_vaapi,hevc_vaapi,av1_nvdec,h264_nvdec,hevc_nvdec \
+        --disable-programs && \
     make -j$(nproc) && \
     make install && \
     cd / && rm -rf /tmp/ffmpeg-9.0.1*
