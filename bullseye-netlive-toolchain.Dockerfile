@@ -99,7 +99,7 @@ RUN cd /tmp && \
     tar -xzf opus-1.6.1.tar.gz && \
     cd opus-1.6.1 && \
     mkdir build && cd build && \
-    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release && \
+    cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release -DOPUS_BUILD_SHARED_LIBRARY=ON && \
     ninja -j$(nproc) && \
     ninja install && \
     cd / && rm -rf /tmp/opus-1.6.1*
