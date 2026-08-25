@@ -13,6 +13,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libidn2-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-22 100 \
+    --slave /usr/bin/clang++ clang++ /usr/bin/clang++-22 \
+    --slave /usr/bin/lld lld /usr/bin/lld-22 \
+    --slave /usr/bin/lldb lldb /usr/bin/lldb-22 \
+    --slave /usr/bin/clang-format clang-format /usr/bin/clang-format-22 \
+    --slave /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-22
+
 # ==========================================
 # 1. 源码编译安装最新版 NASM 3.02 (.tar.gz)
 # ==========================================
